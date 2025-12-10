@@ -4,8 +4,8 @@
 
 int main(int argc, char **argv) {
     JsonObj *jo = (JsonObj*)malloc(sizeof(JsonObj));
-    printf("Hello");
+    // printf("Hello");
     open_json_file("D:\\cjson\\json\\test.json", jo);
-    printf("%d\n", jo->vals[2]->i);
+    printf("%d\n", jo->vals[1]->i);
     return 0;
 }

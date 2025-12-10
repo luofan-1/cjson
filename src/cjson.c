@@ -6,11 +6,11 @@
 
 #define N_DEBUG_
 
-#define PUNCTUATION_MATCH(ch) _Generic((ch), \
-    '{' : ')', \
-    '[' : ']', \
-    '\"' : '\"' \
-)
+// #define PUNCTUATION_MATCH(ch) _Generic((ch), \
+//     '{' : ')', \
+//     '[' : ']', \
+//     '\"' : '\"' \
+// )
 
 enum bool_or_null {
     JSON_NULL_E = -1,
@@ -131,11 +131,16 @@ int read_num(FILE *js) {
 int read_non_enclosed(FILE *js) {
     fseek(js, -1, SEEK_CUR);
     char *str = (char*)malloc(sizeof(char[MAX_STR_LEN]));
-    fscanf(js, "%s", str);
-    if (str[strlen(str)-1]==',') {
-        fseek(js, -1, SEEK_CUR);
-        str[strlen(str)-1] = '\0';
+    // fscanf(js, "%s", str);
+    
+    int str_len = 0;
+    char ch = fgetc(js);
+    while (isalpha(ch)) {
+        str[str_len++] = ch;
+        ch = fgetc(js);
     }
+    str[str_len] = '\0';
+    fseek(js, -1, SEEK_CUR);
     if (!strcmp(str, "null")) {
         return JSON_NULL_E;
     } else if (!strcmp(str, "true")) {
@@ -165,12 +170,12 @@ JsonList* read_json_list(FILE *js, JsonList *jl) {
 
     int node_cnt = 0;
     while (ch!=']') {
-        jl->vals[node_cnt++] = (JsonNode*)malloc(sizeof(JsonNode));
+        jl->vals[node_cnt] = (JsonNode*)malloc(sizeof(JsonNode));
 
         if (isdigit(ch)) {
             jl->vals[node_cnt]->i = read_num(js);
         } else if (ch == '\"') {
-            jl->vals[node_cnt]->str = (char*)malloc(sizeof(char[MAX_STR_LEN]));
+            jl->vals[node_cnt]->str = (char*)malloc(sizeof(char[MAX_STR_LEN]));/*---*/
             read_str(js, jl->vals[node_cnt]->str);
         } else if (ch == '{') {
             jl->vals[node_cnt]->obj = (JsonObj*)malloc(sizeof(JsonObj));
@@ -186,6 +191,7 @@ JsonList* read_json_list(FILE *js, JsonList *jl) {
                 jl->vals[node_cnt]->b = bool_or_nul;
             }
         }
+        node_cnt ++;
 
         ch = pass_nullch(js);
         // cur:','
