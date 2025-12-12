@@ -1,10 +1,8 @@
 {
+    depfiles_format = "gcc",
     files = {
         [[src\cjson.c]]
     },
-    depfiles_format = "gcc",
-    depfiles = "cjson.o: src\\cjson.c src\\cjson.h\
-",
     values = {
         [[C:\msys64\ucrt64\bin\gcc.exe]],
         {
@@ -12,5 +10,7 @@
             "-g",
             "-O0"
         }
-    }
+    },
+    depfiles = "cjson.o: src\\cjson.c src\\cjson.h\
+"
 }

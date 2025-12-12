@@ -1,6 +1,7 @@
 {
     files = {
         [[build\.objs\cjson\mingw\x86_64\debug\src\cjson.c.obj]],
+        [[build\.objs\cjson\mingw\x86_64\debug\src\jsonobj.c.obj]],
         [[build\.objs\cjson\mingw\x86_64\debug\src\main.c.obj]]
     },
     values = {

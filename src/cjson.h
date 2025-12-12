@@ -26,15 +26,38 @@ struct JsonList {
     JsonNode *vals[MAX_NODE_NUM];
 };
 
+typedef struct Dict {
+    //keys;
+    //val_idx;
+} Dict;
+
 struct JsonObj {
     int num;
     char *keys[MAX_NODE_NUM];
     JsonNode *vals[MAX_NODE_NUM];
+    Dict *pair;
 };
 
+// for JsonObj
+JsonNode* find_node_by_key(JsonObj *jobj, char *key, JsonNode *target);
+int print_json_tree(FILE *stream, JsonObj *jobj);
+void* json_to_struct(JsonObj jobj, void* s);
 
-JsonObj* open_json_file(char *path, JsonObj *jo);
 
-void* json_to_struct(JsonObj jf, void* s);
+// for JsonList
+// JL JsonList*
+// TARGET TYPE*
+// 感觉没什么用，删掉了
+// #define jsonlist_to_array(TYPE, JL, TARGET) _Generic( \
+//     (TYPE), \
+//     (int):(jsonlist_to_iarr(JL, TARGET)), \
+//     (bool):(jsonlist_to_barr(JL, TARGET)), \
+//     (string):(jsonlist_to_sarr(JL, YARGET)), \
+//     (JsonList):(jsonlist_to_larr(JL, TARGET)), \
+//     (JsonObj):(jsonlist_to_oarr(JL, TARGET)) \
+// )
+
+JsonObj* open_json_file(char *path);
+
 
 #endif

@@ -20,36 +20,38 @@ enum bool_or_null {
 
 int read_non_enclosed(FILE *fp);
 int read_num(FILE *fp);
-JsonObj* read_json_obj(FILE *, JsonObj *);
-JsonList* read_json_list(FILE *, JsonList *);
+JsonObj* read_json_obj(FILE *);
+JsonList* read_json_list(FILE *);
 char pass_nullch(FILE *fp);
-char* read_str(FILE *, char *);
+char* read_str(FILE *);
 
-JsonObj* open_json_file(char *path, JsonObj *jo) {
+JsonObj* open_json_file(char *path) {
     FILE *json_file = fopen(path, "r");
+    JsonObj *jobj = (JsonObj*)malloc(sizeof(JsonObj));
     if (json_file == NULL) {
         return NULL;
     }
     char ch = pass_nullch(json_file);
     // cur:'{'
-    read_json_obj(json_file, jo);
+    jobj = read_json_obj(json_file);
 
     //ch = fgetc(json_file);
     // cur:'}'
-    return jo;
+    return jobj;
 }
 
-JsonObj* read_json_obj(FILE *js, JsonObj *jo) {
+JsonObj* read_json_obj(FILE *js) {
+    JsonObj *jobj = (JsonObj*)malloc(sizeof(JsonObj));
     char ch = pass_nullch(js);
     // cur:'"l'
 
     //JsonNode *temp;
     int node_cnt = 0;
     while (ch!='}') {
-        jo->keys[node_cnt] = (char*)malloc(sizeof(char[MAX_STR_LEN]));
-        jo->vals[node_cnt] = (JsonNode*)malloc(sizeof(JsonNode));
+        //jobj->keys[node_cnt] = (char*)malloc(sizeof(char[MAX_STR_LEN]));
+        jobj->vals[node_cnt] = (JsonNode*)malloc(sizeof(JsonNode));
         
-        read_str(js, jo->keys[node_cnt]);
+        jobj->keys[node_cnt] = read_str(js);
         // cur:'"r'
         
         ch = pass_nullch(js);
@@ -60,47 +62,22 @@ JsonObj* read_json_obj(FILE *js, JsonObj *jo) {
 
         // 以下函数都要回到 ',' 前
         if (isdigit(ch)) {
-            #ifdef _DEBUG_
-            printf("\n----------------1---------------\n");
-            printf("%c", ch);
-            printf("\n----------------1---------------\n");
-            #endif
-            jo->vals[node_cnt]->i = read_num(js);
+            jobj->vals[node_cnt]->i = read_num(js);
         } else if (ch == '\"') {
-            #ifdef _DEBUG_
-            printf("\n----------------2---------------\n");
-            printf("%c", ch);
-            printf("\n----------------2---------------\n");
-            #endif
-            jo->vals[node_cnt]->str = (char*)malloc(sizeof(char[MAX_STR_LEN]));
-            read_str(js, jo->vals[node_cnt]->str);
+            //jobj->vals[node_cnt]->str = (char*)malloc(sizeof(char[MAX_STR_LEN]));
+            jobj->vals[node_cnt]->str = read_str(js);
         } else if (ch == '{') {
-            #ifdef _DEBUG_
-            printf("\n----------------3---------------\n");
-            printf("%c", ch);
-            printf("\n----------------3---------------\n");
-            #endif
-            jo->vals[node_cnt]->obj = (JsonObj*)malloc(sizeof(JsonObj));
-            read_json_obj(js, jo->vals[node_cnt]->obj);
+            //jobj->vals[node_cnt]->obj = (JsonObj*)malloc(sizeof(JsonObj));
+            jobj->vals[node_cnt]->obj = read_json_obj(js);
         } else if (ch == '[') {
-            #ifdef _DEBUG_
-            printf("\n----------------4---------------\n");
-            printf("%c", ch);
-            printf("\n----------------4---------------\n");
-            #endif
-            jo->vals[node_cnt]->list = (JsonList*)malloc(sizeof(JsonList));
-            read_json_list(js, jo->vals[node_cnt]->list);
+            //jobj->vals[node_cnt]->list = (JsonList*)malloc(sizeof(JsonList));
+            jobj->vals[node_cnt]->list = read_json_list(js);
         } else {
-            #ifdef _DEBUG_
-            printf("\n----------------5---------------\n");
-            printf("%c", ch);
-            printf("\n----------------5---------------\n");
-            #endif
             int bool_or_nul = read_non_enclosed(js);
             if (bool_or_nul == -1) {
-                jo->vals[node_cnt] = NULL;
+                jobj->vals[node_cnt] = NULL;
             } else {
-                jo->vals[node_cnt]->b = bool_or_nul;
+                jobj->vals[node_cnt]->b = bool_or_nul;
             }
         }
         node_cnt ++;
@@ -114,11 +91,11 @@ JsonObj* read_json_obj(FILE *js, JsonObj *jo) {
 
         ch = pass_nullch(js);
         // cur:'"l'
-        //jo->vals[node_cnt] = temp;
+        //jobj->vals[node_cnt] = temp;
     }
-    jo->num = node_cnt;
+    jobj->num = node_cnt;
     
-    return jo;
+    return jobj;
 }
 
 int read_num(FILE *js) {
@@ -153,7 +130,8 @@ int read_non_enclosed(FILE *js) {
     return -2;
 }
 
-char* read_str(FILE *js, char *str) {
+char* read_str(FILE *js) {
+    char *str = (char*)malloc(sizeof(char[MAX_STR_LEN]));
     int str_len = 0;
     char ch = fgetc(js);
     while (ch != '\"') {
@@ -164,7 +142,8 @@ char* read_str(FILE *js, char *str) {
     return str;
 }
 
-JsonList* read_json_list(FILE *js, JsonList *jl) {
+JsonList* read_json_list(FILE *js) {
+    JsonList *jl = (JsonList*)malloc(sizeof(JsonList));
     char ch = pass_nullch(js);
     // cur:list内第一个非空字符
 
@@ -175,14 +154,14 @@ JsonList* read_json_list(FILE *js, JsonList *jl) {
         if (isdigit(ch)) {
             jl->vals[node_cnt]->i = read_num(js);
         } else if (ch == '\"') {
-            jl->vals[node_cnt]->str = (char*)malloc(sizeof(char[MAX_STR_LEN]));/*---*/
-            read_str(js, jl->vals[node_cnt]->str);
+            //jl->vals[node_cnt]->str = (char*)malloc(sizeof(char[MAX_STR_LEN]));/*---*/
+            jl->vals[node_cnt]->str = read_str(js);
         } else if (ch == '{') {
-            jl->vals[node_cnt]->obj = (JsonObj*)malloc(sizeof(JsonObj));
-            read_json_obj(js, jl->vals[node_cnt]->obj);
+            //jl->vals[node_cnt]->obj = (JsonObj*)malloc(sizeof(JsonObj));
+            jl->vals[node_cnt]->obj = read_json_obj(js);
         } else if (ch == '[') {
-            jl->vals[node_cnt]->list = (JsonList*)malloc(sizeof(JsonList));
-            read_json_list(js, jl->vals[node_cnt]->list);
+            //jl->vals[node_cnt]->list = (JsonList*)malloc(sizeof(JsonList));
+            jl->vals[node_cnt]->list = read_json_list(js);
         } else {
             int bool_or_nul = read_non_enclosed(js);
             if (bool_or_nul == -1) {
@@ -219,6 +198,6 @@ char pass_nullch(FILE *fp) {
     return ch;
 }
 
-// void* json_to_struct(JsonObj jf, void *s) {
+// void* json_to_struct(JsonObj jobj, void *s) {
     
 // }
